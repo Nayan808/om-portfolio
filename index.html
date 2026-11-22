@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Om Mate · Video Editor</title>
+<meta name="description" content="Om Mate, video editor from Nagpur. I edit Reels and short videos in CapCut, VN and Canva.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#efebe2; --ink:#161513; --soft:#6d6960; --rule:#cfc9bc;
+    --tape:#f2d21b; --red:#d33a1f;
+    --serif:'Instrument Serif',Georgia,serif;
+    --sans:'Archivo',system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  img,video{display:block;max-width:100%}
+  .page{max-width:1040px;margin:0 auto;padding:0 24px}
+
+  /* header */
+  header{display:flex;justify-content:space-between;align-items:baseline;padding:28px 0;border-bottom:1px solid var(--ink)}
+  .name{font-weight:800;font-stretch:80%;font-size:1.05rem;letter-spacing:.02em;text-transform:uppercase;text-decoration:none}
+  header nav{display:flex;gap:22px;font-size:.95rem}
+  header nav a{text-decoration:none}
+  header nav a:hover{text-decoration:underline;text-underline-offset:4px}
+
+  /* intro */
+  .intro{display:grid;grid-template-columns:1fr 260px;gap:56px;padding:72px 0 88px;align-items:end}
+  .kicker{font-family:var(--mono);font-size:.8rem;color:var(--soft);margin-bottom:22px}
+  h1{font-weight:850;font-stretch:72%;font-size:clamp(3rem,8.6vw,6.6rem);line-height:.9;letter-spacing:-.01em;text-transform:uppercase}
+  h1 i{font-family:var(--serif);font-weight:400;font-stretch:100%;text-transform:none;letter-spacing:-.02em}
+  .lede{margin-top:34px;max-width:560px;font-size:1.15rem}
+  mark{background:linear-gradient(transparent 52%,var(--tape) 52%,var(--tape) 92%,transparent 92%);color:inherit;padding:0 2px}
+  .intro-links{margin-top:30px;display:flex;gap:26px;font-weight:600}
+  .intro-links a{text-underline-offset:5px;text-decoration-thickness:2px}
+
+  .photo{position:relative;transform:rotate(2.2deg);background:#fff;padding:10px 10px 38px;box-shadow:0 1px 0 var(--rule),0 12px 24px -14px rgba(0,0,0,.35)}
+  .photo img{aspect-ratio:4/5;object-fit:cover;width:100%;background:#ddd}
+  .photo span{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-family:var(--serif);font-style:italic;font-size:1.05rem;color:var(--soft)}
+  .photo::before{content:"";position:absolute;top:-12px;left:50%;width:90px;height:24px;margin-left:-45px;background:rgba(242,210,27,.75);transform:rotate(-4deg)}
+
+  /* section titles */
+  .label{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--ink);padding-top:14px;margin-bottom:34px}
+  .label h2{font-weight:800;font-stretch:75%;font-size:1.05rem;text-transform:uppercase;letter-spacing:.04em}
+  .label span{font-family:var(--mono);font-size:.78rem;color:var(--soft)}
+
+  /* film strip */
+  .strip{background:#121110;padding:26px 0;margin:0 -24px;overflow-x:auto;scrollbar-width:thin;position:relative}
+  .strip::before,.strip::after{content:"";position:absolute;left:0;right:0;height:12px;
+    background:repeating-linear-gradient(90deg,transparent 0 10px,#efebe2 10px 22px,transparent 22px 32px);opacity:.85;min-width:100%}
+  .strip::before{top:7px}.strip::after{bottom:7px}
+  .frames{display:flex;gap:14px;padding:0 24px;width:max-content}
+  .frame{width:220px;flex:none;cursor:pointer;color:#e9e5dc;background:none;border:0;text-align:left;font:inherit}
+  .frame .screen{position:relative;aspect-ratio:9/16;background:#262422;overflow:hidden}
+  .frame video,.frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .frame .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.72rem;color:#77726a;text-align:center;padding:20px}
+  .frame .tc{position:absolute;top:8px;left:8px;font-family:var(--mono);font-size:.7rem;background:rgba(0,0,0,.55);padding:2px 6px;color:#fff}
+  .frame .cap{display:flex;justify-content:space-between;gap:10px;padding-top:10px;font-size:.88rem}
+  .frame .cap b{font-weight:600}
+  .frame .cap small{font-family:var(--mono);font-size:.7rem;color:#8f8a80;white-space:nowrap}
+  .frame:hover .screen,.frame:focus-visible .screen{outline:2px solid var(--tape);outline-offset:3px}
+  .strip-note{margin-top:16px;font-size:.92rem;color:var(--soft)}
+
+  /* story */
+  .story{display:grid;grid-template-columns:200px 1fr;gap:40px;padding:96px 0}
+  .story .side{font-family:var(--serif);font-style:italic;font-size:1.35rem;line-height:1.25;color:var(--soft)}
+  .story p{max-width:600px;margin-bottom:18px;font-size:1.08rem}
+  .story .big{font-family:var(--serif);font-size:clamp(1.9rem,4vw,2.8rem);line-height:1.1;margin-bottom:28px;max-width:700px}
+  .tally{display:flex;flex-wrap:wrap;gap:0;margin-top:28px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);max-width:600px}
+  .tally div{flex:1;min-width:140px;padding:14px 0}
+  .tally b{display:block;font-weight:850;font-stretch:72%;font-size:2.1rem;line-height:1}
+  .tally small{font-family:var(--mono);font-size:.72rem;color:var(--soft)}
+
+  /* gallery */
+  .gallery{padding:0 0 100px}
+  .filters{display:flex;flex-wrap:wrap;gap:6px 22px;margin:-14px 0 30px;font-size:.95rem}
+  .filters button{background:none;border:0;font:inherit;color:var(--soft);cursor:pointer;padding:2px 0;border-bottom:2px solid transparent}
+  .filters button.on{color:var(--ink);border-color:var(--ink)}
+  .grid{columns:3 260px;column-gap:18px}
+  .shot{break-inside:avoid;margin-bottom:22px;cursor:zoom-in;background:none;border:0;padding:0;width:100%;text-align:left;font:inherit;color:inherit;display:block}
+  .shot img{width:100%;height:auto;background:#ddd8cc}
+  .shot figcaption{display:flex;justify-content:space-between;gap:10px;padding-top:8px;font-size:.88rem}
+  .shot figcaption small{font-family:var(--mono);font-size:.7rem;color:var(--soft);white-space:nowrap}
+  .shot:hover img,.shot:focus-visible img{outline:2px solid var(--ink);outline-offset:3px}
+  .grid-empty{border:1px dashed var(--rule);padding:40px 24px;text-align:center;font-family:var(--mono);font-size:.8rem;color:var(--soft)}
+  .player img{max-height:86vh;max-width:100%;object-fit:contain}
+  .player figcaption{position:absolute;bottom:16px;left:0;right:0;text-align:center;color:#cfcac0;font-family:var(--mono);font-size:.78rem}
+  .player .nav{position:absolute;top:50%;transform:translateY(-50%);font-size:1.6rem;padding:10px}
+  .player .prev{left:10px;right:auto}.player .next{right:10px;top:50%}
+
+  /* credits */
+  .credits{background:#121110;color:#e9e5dc;padding:110px 24px 120px;text-align:center}
+  .credits h2{font-family:var(--serif);font-weight:400;font-style:italic;font-size:clamp(2.2rem,5vw,3.2rem);margin-bottom:60px}
+  .roll{max-width:620px;margin:0 auto}
+  .roll dl{display:grid;grid-template-columns:1fr 1fr;gap:12px 28px;margin-bottom:44px}
+  .roll dt{text-align:right;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:#8f8a80;padding-top:4px}
+  .roll dd{text-align:left;font-weight:600;font-size:1.1rem}
+  .roll dd small{display:block;font-weight:400;font-size:.85rem;color:#8f8a80}
+  .roll .head{font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;color:var(--tape);margin-bottom:20px}
+
+  /* contact */
+  .contact{padding:100px 0 60px}
+  .contact h2{font-weight:850;font-stretch:72%;font-size:clamp(2.6rem,7vw,5rem);line-height:.92;text-transform:uppercase;max-width:800px}
+  .contact h2 i{font-family:var(--serif);font-weight:400;font-stretch:100%;text-transform:none}
+  .contact .mail{display:inline-block;margin-top:34px;font-family:var(--serif);font-size:clamp(1.6rem,4.5vw,2.6rem);text-decoration-thickness:1px;text-underline-offset:8px;word-break:break-all}
+  .contact .mail:hover{background:var(--tape)}
+  .other{margin-top:34px;display:flex;flex-wrap:wrap;gap:10px 30px;font-size:1rem}
+  .other a{text-underline-offset:4px}
+  footer{border-top:1px solid var(--ink);margin-top:70px;padding:18px 0 30px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:.75rem;color:var(--soft)}
+
+  /* player */
+  .player{position:fixed;inset:0;background:rgba(10,10,9,.94);display:none;align-items:center;justify-content:center;z-index:10;padding:20px}
+  .player.open{display:flex}
+  .player video{max-height:88vh;max-width:100%}
+  .player button{position:absolute;top:14px;right:20px;background:none;border:0;color:#fff;font:400 1rem var(--mono);cursor:pointer}
+
+  @media (max-width:760px){
+    .intro{grid-template-columns:1fr;gap:48px;padding:48px 0 64px}
+    .photo{width:220px;justify-self:start}
+    .story{grid-template-columns:1fr;gap:16px;padding:72px 0}
+    header nav{gap:16px;font-size:.9rem}
+    .frame{width:170px}
+    .roll dl{grid-template-columns:1fr;gap:4px}
+    .roll dt,.roll dd{text-align:center}
+    .roll dd{margin-bottom:14px}
+  }
+  @media (max-width:420px){ .page{padding:0 16px} .strip{margin:0 -16px} .frames{padding:0 16px} header nav a:nth-child(2){display:none} }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="name" href="#">Om Mate</a>
+    <nav><a href="#work">Work</a><a href="#gallery">Gallery</a><a href="#credits">About</a><a href="#contact">Contact</a></nav>
+  </header>
+
+  <section class="intro">
+    <div>
+      <p class="kicker">VIDEO EDITOR — NAGPUR, IN</p>
+      <h1>I edit short <i>videos</i> for Instagram.</h1>
+      <p class="lede">I'm Om. I've been cutting Reels in CapCut and VN for my own page, which went to <mark>8,000+ followers in 24 posts</mark> without a single paid ad. Now I want to do the same for creators and brands.</p>
+      <div class="intro-links">
+        <a href="#work">See my edits</a>
+        <a href="mailto:ommate56@gmail.com">Email me</a>
+      </div>
+    </div>
+    <!-- Put Om's photo next to this file as om.jpg. If there is no photo, this block hides itself. -->
+    <figure class="photo" id="photo">
+      <img src="om.jpg" alt="Om Mate" onerror="document.getElementById('photo').remove()">
+      <span>that's me</span>
+    </figure>
+  </section>
+
+  <section id="work">
+    <div class="label"><h2>Edits</h2><span>scroll →</span></div>
+  </section>
+</div>
+
+<div class="strip"><div class="frames" id="frames"></div></div>
+
+<div class="page">
+  <p class="strip-note">More on Instagram: <a href="#" data-link="instagram">@your_handle</a></p>
+
+  <section class="story">
+    <div class="side">How the page grew</div>
+    <div>
+      <p class="big">Twenty-four posts. No ads. Just editing that people watched to the end.</p>
+      <p>I started an Instagram page and made one Reel a day, showing a project I was working on. I shot, edited and captioned all of them myself, mostly on my phone with CapCut and VN.</p>
+      <p>I kept the first second tight, cut on the beat and put clean captions on everything, because most people watch with the sound off. I made the covers and post designs in Canva so the grid looked consistent. When I got stuck on a hook or a caption, I brainstormed with ChatGPT.</p>
+      <div class="tally">
+        <div><b>24</b><small>posts</small></div>
+        <div><b>8,000+</b><small>followers</small></div>
+        <div><b>₹0</b><small>spent on ads</small></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gallery" id="gallery">
+    <div class="label"><h2>Photos &amp; graphics</h2><span id="g-count"></span></div>
+    <div class="filters" id="filters"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+</div>
+
+<section class="credits" id="credits">
+  <h2>Credits</h2>
+  <div class="roll">
+    <p class="head">Tools</p>
+    <dl>
+      <dt>Edited in</dt><dd>CapCut</dd>
+      <dt>Also in</dt><dd>VN Video Editor</dd>
+      <dt>Thumbnails &amp; posts</dt><dd>Canva</dd>
+      <dt>Hooks &amp; captions</dt><dd>ChatGPT</dd>
+      <dt>Published on</dt><dd>Instagram Reels</dd>
+    </dl>
+    <p class="head">What I do</p>
+    <dl>
+      <dt>Editing</dt><dd>Reels &amp; Shorts<small>cuts, transitions, speed ramps, beat sync</small></dd>
+      <dt>Finishing</dt><dd>Captions &amp; colour<small>text animation, subtitles, basic grading, audio cleanup</small></dd>
+      <dt>Packaging</dt><dd>Covers &amp; thumbnails<small>Canva designs that match the video</small></dd>
+    </dl>
+    <p class="head">Also</p>
+    <dl>
+      <dt>Studied</dt><dd>MCA<small>G H Raisoni Skill Tech University, Nagpur · 2024–26</small></dd>
+      <dt>Before that</dt><dd>BCCA<small>RTMNU, Nagpur · 2021–24</small></dd>
+      <dt>Internship</dt><dd>Data Analyst Intern<small>Widesoftech Pvt Ltd · Jan–Jun 2026</small></dd>
+      <dt>Won</dt><dd>1st place, Debugging Challenge<small>Prakalp &amp; Shikhar 2026, national tech fest</small></dd>
+    </dl>
+  </div>
+</section>
+
+<div class="page">
+  <section class="contact" id="contact">
+    <div class="label"><h2>Contact</h2><span>usually reply same day</span></div>
+    <h2>Got footage? <i>Send it over.</i></h2>
+    <a class="mail" href="mailto:ommate56@gmail.com">ommate56@gmail.com</a>
+    <div class="other">
+      <a href="tel:+917030091076">+91 70300 91076</a>
+      <a href="#" data-link="whatsapp">WhatsApp</a>
+      <a href="#" data-link="instagram">Instagram</a>
+      <a href="#" data-link="linkedin">LinkedIn</a>
+    </div>
+  </section>
+  <footer><span>Om Mate, 2026</span><span>Nagpur, Maharashtra</span></footer>
+</div>
+
+<div class="player" id="player" role="dialog" aria-modal="true" aria-label="Video">
+  <button type="button" class="x">close ✕</button>
+  <video controls playsinline></video>
+</div>
+
+<div class="player" id="viewer" role="dialog" aria-modal="true" aria-label="Image">
+  <button type="button" class="x">close ✕</button>
+  <button type="button" class="nav prev" aria-label="Previous">←</button>
+  <img alt="">
+  <button type="button" class="nav next" aria-label="Next">→</button>
+  <figcaption></figcaption>
+</div>
+
+<script>
+/* ============ EDIT HERE ============ */
+const LINKS = {
+  instagram: "https://instagram.com/",      // TODO: Om's Instagram
+  linkedin:  "https://linkedin.com/in/",    // TODO: Om's LinkedIn
+  whatsapp:  "https://wa.me/917030091076"
+};
+
+// Put videos in a "videos" folder next to this file.
+// video: "videos/reel1.mp4"  → plays on the site
+// link:  "https://instagram.com/reel/..." → opens on Instagram instead
+// poster: "videos/reel1.jpg" (optional cover image)
+const REELS = [
+  { title: "Project reveal",  time: "0:18", video: "", poster: "", link: "" },
+  { title: "Beat-sync cut",   time: "0:12", video: "", poster: "", link: "" },
+  { title: "Before / after",  time: "0:22", video: "", poster: "", link: "" },
+  { title: "Talking head",    time: "0:35", video: "", poster: "", link: "" },
+  { title: "Product promo",   time: "0:15", video: "", poster: "", link: "" }
+];
+
+// Photos & graphics. Put the images in the "graphics" folder next to this file.
+// type is used for the filter buttons (e.g. "Posters", "Social posts", "Photography", "Thumbnails").
+// Add one line per image:
+const GRAPHICS = [
+  // { src: "graphics/poster-1.jpg",  title: "Diwali poster",      type: "Posters" },
+  // { src: "graphics/post-1.png",    title: "Café menu post",     type: "Social posts" },
+  // { src: "graphics/photo-1.jpg",   title: "Street, Nagpur",     type: "Photography" },
+  // { src: "graphics/thumb-1.jpg",   title: "YouTube thumbnail",  type: "Thumbnails" },
+];
+/* =================================== */
+
+document.querySelectorAll('[data-link]').forEach(a => {
+  a.href = LINKS[a.dataset.link] || '#';
+  if (a.href.startsWith('http')) { a.target = '_blank'; a.rel = 'noopener'; }
+});
+
+const frames = document.getElementById('frames');
+const player = document.getElementById('player'), pv = player.querySelector('video');
+
+REELS.forEach((r, i) => {
+  const b = document.createElement('button');
+  b.className = 'frame';
+  b.type = 'button';
+  let media = '<div class="empty">video ' + String(i + 1).padStart(2, '0') + '<br>coming soon</div>';
+  if (r.video) media = `<video src="${r.video}" ${r.poster ? `poster="${r.poster}"` : ''} muted loop playsinline preload="metadata"></video>`;
+  else if (r.poster) media = `<img src="${r.poster}" alt="">`;
+  b.innerHTML = `<div class="screen">${media}<span class="tc">${r.time}</span></div>
+    <div class="cap"><b>${r.title}</b><small>${String(i + 1).padStart(2, '0')}</small></div>`;
+  const v = b.querySelector('video');
+  if (v) { b.onmouseenter = () => v.play().catch(() => {}); b.onmouseleave = () => { v.pause(); v.currentTime = 0; }; }
+  b.onclick = () => {
+    if (r.video) { pv.src = r.video; player.classList.add('open'); pv.play().catch(() => {}); }
+    else if (r.link) window.open(r.link, '_blank', 'noopener');
+  };
+  frames.appendChild(b);
+});
+
+const close = () => { player.classList.remove('open'); pv.pause(); pv.removeAttribute('src'); };
+player.querySelector('.x').onclick = close;
+player.onclick = e => { if (e.target === player) close(); };
+
+/* gallery */
+const grid = document.getElementById('grid'), filters = document.getElementById('filters');
+const viewer = document.getElementById('viewer'), vImg = viewer.querySelector('img'), vCap = viewer.querySelector('figcaption');
+let shown = [], cur = 0;
+
+function renderGrid(type) {
+  shown = GRAPHICS.filter(g => type === 'All' || g.type === type);
+  grid.innerHTML = '';
+  if (!GRAPHICS.length) {
+    grid.innerHTML = '<div class="grid-empty">Add images to the graphics folder and list them in GRAPHICS in index.html</div>';
+    return;
+  }
+  shown.forEach((g, i) => {
+    const f = document.createElement('figure');
+    f.className = 'shot';
+    f.tabIndex = 0;
+    f.innerHTML = `<img src="${g.src}" alt="${g.title || ''}" loading="lazy">
+      <figcaption><span>${g.title || ''}</span><small>${g.type || ''}</small></figcaption>`;
+    f.onclick = () => openImg(i);
+    f.onkeydown = e => { if (e.key === 'Enter') openImg(i); };
+    grid.appendChild(f);
+  });
+  document.getElementById('g-count').textContent = shown.length + (shown.length === 1 ? ' piece' : ' pieces');
+}
+
+const types = ['All', ...new Set(GRAPHICS.map(g => g.type).filter(Boolean))];
+if (types.length > 2) {
+  types.forEach((t, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = t;
+    if (i === 0) b.className = 'on';
+    b.onclick = () => { filters.querySelectorAll('button').forEach(x => x.classList.remove('on')); b.classList.add('on'); renderGrid(t); };
+    filters.appendChild(b);
+  });
+} else filters.remove();
+renderGrid('All');
+
+function openImg(i) {
+  cur = (i + shown.length) % shown.length;
+  const g = shown[cur];
+  vImg.src = g.src; vImg.alt = g.title || '';
+  vCap.textContent = [g.title, g.type].filter(Boolean).join(' · ') + `   ${cur + 1} / ${shown.length}`;
+  viewer.classList.add('open');
+}
+const closeViewer = () => viewer.classList.remove('open');
+viewer.querySelector('.x').onclick = closeViewer;
+viewer.querySelector('.prev').onclick = e => { e.stopPropagation(); openImg(cur - 1); };
+viewer.querySelector('.next').onclick = e => { e.stopPropagation(); openImg(cur + 1); };
+viewer.onclick = e => { if (e.target === viewer) closeViewer(); };
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { close(); closeViewer(); }
+  if (viewer.classList.contains('open')) {
+    if (e.key === 'ArrowLeft') openImg(cur - 1);
+    if (e.key === 'ArrowRight') openImg(cur + 1);
+  }
+});
+</script>
+</body>
+</html>

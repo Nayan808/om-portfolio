@@ -50,7 +50,7 @@
   .label span{font-family:var(--mono);font-size:.78rem;color:var(--soft)}
 
   /* film strip */
-  .strip{background:#121110;padding:26px 0;margin:0 -24px;overflow-x:auto;scrollbar-width:thin;position:relative}
+  .strip{background:#121110;padding:26px 0;overflow-x:auto;scrollbar-width:thin;position:relative}
   .strip::before,.strip::after{content:"";position:absolute;left:0;right:0;height:12px;
     background:repeating-linear-gradient(90deg,transparent 0 10px,#efebe2 10px 22px,transparent 22px 32px);opacity:.85;min-width:100%}
   .strip::before{top:7px}.strip::after{bottom:7px}
@@ -87,6 +87,34 @@
   .shot figcaption{display:flex;justify-content:space-between;gap:10px;padding-top:8px;font-size:.88rem}
   .shot figcaption small{font-family:var(--mono);font-size:.7rem;color:var(--soft);white-space:nowrap}
   .shot:hover img,.shot:focus-visible img{outline:2px solid var(--ink);outline-offset:3px}
+  /* project card: looks like a small stack of prints */
+  .shot.project .stack{position:relative}
+  .shot.project .stack::before,.shot.project .stack::after{content:"";position:absolute;inset:0;background:#d9d3c6;border:1px solid var(--rule);z-index:-1}
+  .shot.project .stack::before{transform:translate(6px,6px)}
+  .shot.project .stack::after{transform:translate(12px,12px);background:#cfc8b9}
+  .projects{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,440px),1fr));gap:30px 34px;margin-bottom:20px}
+  .projects:empty{display:none}
+  .shot.project{margin-bottom:24px;position:relative;z-index:0}
+  .shot.project .count{position:absolute;top:10px;left:10px;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:.7rem;padding:3px 8px}
+  .shot.project figcaption{padding-top:20px}
+  .shot.project figcaption span b{font-weight:700}
+  .shot.project figcaption em{display:block;font-style:normal;font-size:.8rem;color:var(--soft)}
+
+  /* project sheet */
+  .sheet{position:fixed;inset:0;background:var(--paper);z-index:9;overflow-y:auto;display:none}
+  .sheet.open{display:block}
+  .sheet-in{max-width:1040px;margin:0 auto;padding:0 24px 80px}
+  .sheet-top{position:sticky;top:0;background:var(--paper);display:flex;justify-content:space-between;align-items:center;padding:20px 0;border-bottom:1px solid var(--ink);z-index:1}
+  .sheet-top button{background:none;border:0;font:500 .95rem var(--sans);cursor:pointer;color:var(--ink)}
+  .sheet-top button:hover{text-decoration:underline;text-underline-offset:4px}
+  .sheet h3{font-weight:850;font-stretch:72%;font-size:clamp(2.4rem,7vw,4.6rem);line-height:.92;text-transform:uppercase;margin:48px 0 18px}
+  .sheet .meta{display:flex;flex-wrap:wrap;gap:8px 28px;font-family:var(--mono);font-size:.78rem;color:var(--soft);margin-bottom:18px}
+  .sheet .meta a{color:var(--ink)}
+  .sheet .desc{max-width:620px;font-size:1.08rem;margin-bottom:44px}
+  .sheet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
+  .sheet-grid .shot:first-child{grid-column:1/-1}
+  .sheet-grid .shot{margin:0}
+  body.locked{overflow:hidden}
   .grid-empty{border:1px dashed var(--rule);padding:40px 24px;text-align:center;font-family:var(--mono);font-size:.8rem;color:var(--soft)}
   .player img{max-height:86vh;max-width:100%;object-fit:contain}
   .player figcaption{position:absolute;bottom:16px;left:0;right:0;text-align:center;color:#cfcac0;font-family:var(--mono);font-size:.78rem}
@@ -129,7 +157,7 @@
     .roll dt,.roll dd{text-align:center}
     .roll dd{margin-bottom:14px}
   }
-  @media (max-width:420px){ .page{padding:0 16px} .strip{margin:0 -16px} .frames{padding:0 16px} header nav a:nth-child(2){display:none} }
+  @media (max-width:420px){ .page{padding:0 16px} .frames{padding:0 16px} header nav a:nth-child(2){display:none} }
 </style>
 </head>
 <body>
@@ -183,6 +211,7 @@
   <section class="gallery" id="gallery">
     <div class="label"><h2>Photos &amp; graphics</h2><span id="g-count"></span></div>
     <div class="filters" id="filters"></div>
+    <div class="projects" id="projects"></div>
     <div class="grid" id="grid"></div>
   </section>
 </div>
@@ -234,7 +263,17 @@
   <video controls playsinline></video>
 </div>
 
-<div class="player" id="viewer" role="dialog" aria-modal="true" aria-label="Image">
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Project">
+  <div class="sheet-in">
+    <div class="sheet-top"><span class="mono" style="font-family:var(--mono);font-size:.78rem;color:var(--soft)">PROJECT</span><button type="button" id="sheet-close">← Back to gallery</button></div>
+    <h3 id="sheet-title"></h3>
+    <div class="meta" id="sheet-meta"></div>
+    <p class="desc" id="sheet-desc"></p>
+    <div class="sheet-grid" id="sheet-grid"></div>
+  </div>
+</div>
+
+<div class="player" id="viewer" role="dialog" aria-modal="true" aria-label="Image" style="z-index:11">
   <button type="button" class="x">close ✕</button>
   <button type="button" class="nav prev" aria-label="Previous">←</button>
   <img alt="">
@@ -262,9 +301,33 @@ const REELS = [
   { title: "Product promo",   time: "0:15", video: "", poster: "", link: "" }
 ];
 
-// Photos & graphics. Put the images in the "graphics" folder next to this file.
+// Projects. Each one shows as a cover card in the gallery and opens to show all its images.
+// The first image is the cover.
+const PROJECTS = [
+  {
+    title: "Feelz by mindcafe",
+    type: "Brand creatives",
+    client: "mindcafe",
+    url: "https://www.mindcafe.app/feelz",
+    desc: "Product posters, pack shots and social ads for Feelz, mindcafe's range of fast-dissolving oral strips. Four flavours (Focus, Joy, Rest and Extrovert), each with its own colour, plus a launch offer banner and ad posters that explain the benefits.",
+    images: [
+      { src: "graphics/mindcafe/01-bundle-offer.webp",   title: "Buy 4 @ ₹949 offer banner" },
+      { src: "graphics/mindcafe/02-focus-pack.webp",     title: "Focus pack shot" },
+      { src: "graphics/mindcafe/03-joy-pack.webp",       title: "Joy pack shot" },
+      { src: "graphics/mindcafe/04-rest-pack.webp",      title: "Rest pack shot" },
+      { src: "graphics/mindcafe/05-extrovert-pack.webp", title: "Extrovert pack shot" },
+      { src: "graphics/mindcafe/06-2x-focus.webp",       title: "2x Focus ad" },
+      { src: "graphics/mindcafe/07-20-minutes.webp",     title: "20 minutes explainer" },
+      { src: "graphics/mindcafe/08-focus-numbers.webp",  title: "Real Feelz in numbers: Focus" },
+      { src: "graphics/mindcafe/09-joy-numbers.webp",    title: "Real Feelz in numbers: Joy" },
+      { src: "graphics/mindcafe/10-botanicals.webp",     title: "Ingredients poster" }
+    ]
+  },
+  // Add more projects here in the same format.
+];
+
+// Single photos & graphics that aren't part of a project. Put them in the "graphics" folder.
 // type is used for the filter buttons (e.g. "Posters", "Social posts", "Photography", "Thumbnails").
-// Add one line per image:
 const GRAPHICS = [
   // { src: "graphics/poster-1.jpg",  title: "Diwali poster",      type: "Posters" },
   // { src: "graphics/post-1.png",    title: "Café menu post",     type: "Social posts" },
@@ -308,27 +371,69 @@ const grid = document.getElementById('grid'), filters = document.getElementById(
 const viewer = document.getElementById('viewer'), vImg = viewer.querySelector('img'), vCap = viewer.querySelector('figcaption');
 let shown = [], cur = 0;
 
-function renderGrid(type) {
-  shown = GRAPHICS.filter(g => type === 'All' || g.type === type);
-  grid.innerHTML = '';
-  if (!GRAPHICS.length) {
-    grid.innerHTML = '<div class="grid-empty">Add images to the graphics folder and list them in GRAPHICS in index.html</div>';
-    return;
-  }
-  shown.forEach((g, i) => {
-    const f = document.createElement('figure');
-    f.className = 'shot';
-    f.tabIndex = 0;
-    f.innerHTML = `<img src="${g.src}" alt="${g.title || ''}" loading="lazy">
-      <figcaption><span>${g.title || ''}</span><small>${g.type || ''}</small></figcaption>`;
-    f.onclick = () => openImg(i);
-    f.onkeydown = e => { if (e.key === 'Enter') openImg(i); };
-    grid.appendChild(f);
-  });
-  document.getElementById('g-count').textContent = shown.length + (shown.length === 1 ? ' piece' : ' pieces');
+function shotEl(g, onOpen) {
+  const f = document.createElement('figure');
+  f.className = 'shot';
+  f.tabIndex = 0;
+  f.innerHTML = `<img src="${g.src}" alt="${g.title || ''}" loading="lazy">
+    <figcaption><span>${g.title || ''}</span><small>${g.type || ''}</small></figcaption>`;
+  f.onclick = onOpen;
+  f.onkeydown = e => { if (e.key === 'Enter') onOpen(); };
+  return f;
 }
 
-const types = ['All', ...new Set(GRAPHICS.map(g => g.type).filter(Boolean))];
+function renderGrid(type) {
+  const projs = PROJECTS.filter(p => type === 'All' || p.type === type);
+  const singles = GRAPHICS.filter(g => type === 'All' || g.type === type);
+  grid.innerHTML = '';
+  const projBox = document.getElementById('projects');
+  projBox.innerHTML = '';
+  if (!PROJECTS.length && !GRAPHICS.length) {
+    grid.innerHTML = '<div class="grid-empty">Add images to the graphics folder and list them in PROJECTS or GRAPHICS in index.html</div>';
+    return;
+  }
+  projs.forEach(p => {
+    const f = document.createElement('figure');
+    f.className = 'shot project';
+    f.tabIndex = 0;
+    f.innerHTML = `<div class="stack"><img src="${p.images[0].src}" alt="${p.title}" loading="lazy"><span class="count">${p.images.length} pieces</span></div>
+      <figcaption><span><b>${p.title}</b><em>Open project →</em></span><small>${p.type || ''}</small></figcaption>`;
+    f.onclick = () => openProject(p);
+    f.onkeydown = e => { if (e.key === 'Enter') openProject(p); };
+    projBox.appendChild(f);
+  });
+  singles.forEach((g, i) => grid.appendChild(shotEl(g, () => { shown = singles; openImg(i); })));
+  const total = projs.reduce((n, p) => n + p.images.length, 0) + singles.length;
+  document.getElementById('g-count').textContent = total + (total === 1 ? ' piece' : ' pieces');
+}
+
+/* project sheet */
+const sheet = document.getElementById('sheet');
+function openProject(p) {
+  document.getElementById('sheet-title').textContent = p.title;
+  document.getElementById('sheet-desc').textContent = p.desc || '';
+  document.getElementById('sheet-meta').innerHTML =
+    [p.client && 'Client: ' + p.client, p.type, p.images.length + ' pieces', p.url && `<a href="${p.url}" target="_blank" rel="noopener">See it live ↗</a>`]
+      .filter(Boolean).map(x => `<span>${x}</span>`).join('');
+  const sg = document.getElementById('sheet-grid');
+  sg.innerHTML = '';
+  p.images.forEach((g, i) => sg.appendChild(shotEl(g, () => { shown = p.images; openImg(i); })));
+  sheet.classList.add('open');
+  sheet.scrollTop = 0;
+  document.body.classList.add('locked');
+  history.pushState({ project: p.title }, '', '#project');
+}
+function closeProject(fromHistory) {
+  if (!sheet.classList.contains('open')) return;
+  sheet.classList.remove('open');
+  document.body.classList.remove('locked');
+  if (!fromHistory && location.hash === '#project') history.back();
+}
+document.getElementById('sheet-close').onclick = () => closeProject();
+window.addEventListener('popstate', () => closeProject(true));
+if (location.hash === '#project') history.replaceState(null, '', location.pathname + '#gallery');
+
+const types = ['All', ...new Set([...PROJECTS, ...GRAPHICS].map(g => g.type).filter(Boolean))];
 if (types.length > 2) {
   types.forEach((t, i) => {
     const b = document.createElement('button');
@@ -354,7 +459,11 @@ viewer.querySelector('.next').onclick = e => { e.stopPropagation(); openImg(cur 
 viewer.onclick = e => { if (e.target === viewer) closeViewer(); };
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { close(); closeViewer(); }
+  if (e.key === 'Escape') {
+    if (viewer.classList.contains('open')) closeViewer();
+    else if (player.classList.contains('open')) close();
+    else closeProject();
+  }
   if (viewer.classList.contains('open')) {
     if (e.key === 'ArrowLeft') openImg(cur - 1);
     if (e.key === 'ArrowRight') openImg(cur + 1);

@@ -54,8 +54,8 @@
   .strip::before,.strip::after{content:"";position:absolute;left:0;right:0;height:12px;
     background:repeating-linear-gradient(90deg,transparent 0 10px,#efebe2 10px 22px,transparent 22px 32px);opacity:.85;min-width:100%}
   .strip::before{top:7px}.strip::after{bottom:7px}
-  .frames{display:flex;gap:14px;padding:0 24px;width:max-content}
-  .frame{width:220px;flex:none;cursor:pointer;color:#e9e5dc;background:none;border:0;text-align:left;font:inherit}
+  .frames{display:flex;gap:14px;padding:0 24px;width:max-content;margin:0 auto}
+  .frame{width:clamp(170px,calc((min(100vw,1040px) - 104px) / 5),230px);flex:none;cursor:pointer;color:#e9e5dc;background:none;border:0;text-align:left;font:inherit}
   .frame .screen{position:relative;aspect-ratio:9/16;background:#262422;overflow:hidden}
   .frame video,.frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   .frame .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.72rem;color:#77726a;text-align:center;padding:20px}
@@ -64,6 +64,10 @@
   .frame .cap b{font-weight:600}
   .frame .cap small{font-family:var(--mono);font-size:.7rem;color:#8f8a80;white-space:nowrap}
   .frame:hover .screen,.frame:focus-visible .screen{outline:2px solid var(--tape);outline-offset:3px}
+  .frame .pl{position:absolute;left:8px;bottom:8px;font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;background:var(--tape);color:var(--ink);padding:3px 7px;transition:opacity .2s}
+  .frame.live .pl{opacity:0}
+  .frame .cap span{display:flex;flex-direction:column;line-height:1.3}
+  .frame .cap em{font-style:normal;font-size:.76rem;color:#8f8a80;margin-top:2px}
   .strip-note{margin-top:16px;font-size:.92rem;color:var(--soft)}
 
   /* story */
@@ -185,7 +189,7 @@
   </section>
 
   <section id="work">
-    <div class="label"><h2>Edits</h2><span>scroll →</span></div>
+    <div class="label"><h2>Edits</h2><span id="reel-count">tap to play</span></div>
   </section>
 </div>
 
@@ -261,6 +265,7 @@
 <div class="player" id="player" role="dialog" aria-modal="true" aria-label="Video">
   <button type="button" class="x">close ✕</button>
   <video controls playsinline></video>
+  <figcaption></figcaption>
 </div>
 
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Project">
@@ -289,16 +294,17 @@ const LINKS = {
   whatsapp:  "https://wa.me/917030091076"
 };
 
-// Put videos in a "videos" folder next to this file.
-// video: "videos/reel1.mp4"  → plays on the site
+// Put videos in the "videos" folder and cover images in "videos/posters".
+// video: "videos/name.mp4"  → plays on the site
 // link:  "https://instagram.com/reel/..." → opens on Instagram instead
-// poster: "videos/reel1.jpg" (optional cover image)
+// poster: cover image shown before the video plays
+// Order here = order on the site.
 const REELS = [
-  { title: "Project reveal",  time: "0:18", video: "", poster: "", link: "" },
-  { title: "Beat-sync cut",   time: "0:12", video: "", poster: "", link: "" },
-  { title: "Before / after",  time: "0:22", video: "", poster: "", link: "" },
-  { title: "Talking head",    time: "0:35", video: "", poster: "", link: "" },
-  { title: "Product promo",   time: "0:15", video: "", poster: "", link: "" }
+  { title: "Janmashtami celebration",  type: "Event",            time: "0:48", video: "videos/Video-95829.mp4", poster: "videos/posters/Video-95829.jpg" },
+  { title: "Trading seminar promo",    type: "Promo",            time: "0:23", video: "videos/Video-12686.mp4", poster: "videos/posters/Video-12686.jpg" },
+  { title: "MLA greeting edit",        type: "Political",        time: "0:18", video: "videos/Video-87767.mp4", poster: "videos/posters/Video-87767.jpg" },
+  { title: "DK FX Trader seminar",     type: "Event recap",      time: "0:23", video: "videos/Video-14653.mp4", poster: "videos/posters/Video-14653.jpg" },
+  { title: "A day with the leader",    type: "Behind the scenes", time: "0:39", video: "videos/Video-75282.mp4", poster: "videos/posters/Video-75282.jpg" }
 ];
 
 // Projects. Each one shows as a cover card in the gallery and opens to show all its images.
@@ -342,27 +348,40 @@ document.querySelectorAll('[data-link]').forEach(a => {
 });
 
 const frames = document.getElementById('frames');
-const player = document.getElementById('player'), pv = player.querySelector('video');
+document.getElementById('reel-count').textContent = REELS.length + ' reels · tap to play';
+const player = document.getElementById('player'), pv = player.querySelector('video'), pcap = player.querySelector('figcaption');
 
 REELS.forEach((r, i) => {
   const b = document.createElement('button');
   b.className = 'frame';
   b.type = 'button';
   let media = '<div class="empty">video ' + String(i + 1).padStart(2, '0') + '<br>coming soon</div>';
-  if (r.video) media = `<video src="${r.video}" ${r.poster ? `poster="${r.poster}"` : ''} muted loop playsinline preload="metadata"></video>`;
+  // preload="none": the poster shows first, and the video only downloads on hover or tap
+  if (r.video) media = `<video src="${r.video}" ${r.poster ? `poster="${r.poster}"` : ''} muted loop playsinline preload="none"></video>`;
   else if (r.poster) media = `<img src="${r.poster}" alt="">`;
-  b.innerHTML = `<div class="screen">${media}<span class="tc">${r.time}</span></div>
-    <div class="cap"><b>${r.title}</b><small>${String(i + 1).padStart(2, '0')}</small></div>`;
+  b.setAttribute('aria-label', 'Play ' + r.title);
+  b.innerHTML = `<div class="screen">${media}<span class="tc">${r.time}</span>${r.video || r.link ? '<span class="pl">▶ play</span>' : ''}</div>
+    <div class="cap"><span><b>${r.title}</b>${r.type ? `<em>${r.type}</em>` : ''}</span><small>${String(i + 1).padStart(2, '0')}</small></div>`;
   const v = b.querySelector('video');
-  if (v) { b.onmouseenter = () => v.play().catch(() => {}); b.onmouseleave = () => { v.pause(); v.currentTime = 0; }; }
+  if (v && matchMedia('(hover: hover)').matches) {
+    b.onmouseenter = () => { b.classList.add('live'); v.play().catch(() => {}); };
+    b.onmouseleave = () => { b.classList.remove('live'); v.pause(); };
+  }
   b.onclick = () => {
-    if (r.video) { pv.src = r.video; player.classList.add('open'); pv.play().catch(() => {}); }
-    else if (r.link) window.open(r.link, '_blank', 'noopener');
+    if (r.video) {
+      if (v) v.pause();
+      pv.src = r.video;
+      if (r.poster) pv.poster = r.poster;
+      pcap.textContent = [r.title, r.type].filter(Boolean).join(' · ');
+      player.classList.add('open');
+      document.body.classList.add('locked');
+      pv.play().catch(() => {});
+    } else if (r.link) window.open(r.link, '_blank', 'noopener');
   };
   frames.appendChild(b);
 });
 
-const close = () => { player.classList.remove('open'); pv.pause(); pv.removeAttribute('src'); };
+const close = () => { player.classList.remove('open'); pv.pause(); pv.removeAttribute('src'); pv.removeAttribute('poster'); pv.load(); if (!sheet.classList.contains('open')) document.body.classList.remove('locked'); };
 player.querySelector('.x').onclick = close;
 player.onclick = e => { if (e.target === player) close(); };
 

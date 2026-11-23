@@ -93,6 +93,8 @@
   .shot:hover img,.shot:focus-visible img{outline:2px solid var(--ink);outline-offset:3px}
   /* project card: looks like a small stack of prints */
   .shot.project .stack{position:relative}
+  .shot.project .cover{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;background:#d9d3c6}
+  .shot.project .cover img{width:100%;height:100%;object-fit:cover;object-position:top}
   .shot.project .stack::before,.shot.project .stack::after{content:"";position:absolute;inset:0;background:#d9d3c6;border:1px solid var(--rule);z-index:-1}
   .shot.project .stack::before{transform:translate(6px,6px)}
   .shot.project .stack::after{transform:translate(12px,12px);background:#cfc8b9}
@@ -116,7 +118,7 @@
   .sheet .meta a{color:var(--ink)}
   .sheet .desc{max-width:620px;font-size:1.08rem;margin-bottom:44px}
   .sheet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
-  .sheet-grid .shot:first-child{grid-column:1/-1}
+  .sheet-grid .shot.wide{grid-column:1/-1}
   .sheet-grid .shot{margin:0}
   body.locked{overflow:hidden}
   .grid-empty{border:1px dashed var(--rule);padding:40px 24px;text-align:center;font-family:var(--mono);font-size:.8rem;color:var(--soft)}
@@ -241,6 +243,7 @@
     <dl>
       <dt>Studied</dt><dd>MCA<small>G H Raisoni Skill Tech University, Nagpur · 2024–26</small></dd>
       <dt>Before that</dt><dd>BCCA<small>RTMNU, Nagpur · 2021–24</small></dd>
+      <dt>Freelance</dt><dd>Cloudocean Learning<small>Social media posts for an IT institute, Nagpur</small></dd>
       <dt>Internship</dt><dd>Data Analyst Intern<small>Widesoftech Pvt Ltd · Jan–Jun 2026</small></dd>
       <dt>Won</dt><dd>1st place, Debugging Challenge<small>Prakalp &amp; Shikhar 2026, national tech fest</small></dd>
     </dl>
@@ -329,7 +332,23 @@ const PROJECTS = [
       { src: "graphics/mindcafe/10-botanicals.webp",     title: "Ingredients poster" }
     ]
   },
+  {
+    title: "Cloudocean Learning",
+    type: "Freelance",
+    client: "Cloudocean Learning, Nagpur",
+    url: "https://www.cloudoceanlearning.com",
+    coverCount: 2,
+    desc: "Freelance social media posts for Cloudocean Learning, an IT training institute in Nagpur that teaches AWS, DevOps and Python. The work covers course offers, an internship launch, a hiring post and festival greetings, all in the institute's brand colours and ready for Instagram.",
+    images: [
+      { src: "graphics/freelance/01-christmas-sale.jpg",      title: "Christmas & year-end sale" },
+      { src: "graphics/freelance/02-internship-program.jpg",  title: "Internship program launch" },
+      { src: "graphics/freelance/03-we-are-hiring.jpg",       title: "We are hiring: DevOps Engineer" },
+      { src: "graphics/freelance/04-gudi-padwa.jpg",          title: "Gudi Padwa greeting" },
+      { src: "graphics/freelance/05-hanuman-janmotsav.jpg",   title: "Hanuman Janmotsav greeting" }
+    ]
+  },
   // Add more projects here in the same format.
+  // coverCount: 2 shows the first two images side by side as the cover (good for tall posters).
 ];
 
 // Single photos & graphics that aren't part of a project. Put them in the "graphics" folder.
@@ -396,6 +415,9 @@ function shotEl(g, onOpen) {
   f.tabIndex = 0;
   f.innerHTML = `<img src="${g.src}" alt="${g.title || ''}" loading="lazy">
     <figcaption><span>${g.title || ''}</span><small>${g.type || ''}</small></figcaption>`;
+  const im = f.querySelector('img');
+  const markWide = () => { if (im.naturalWidth > im.naturalHeight * 1.3) f.classList.add('wide'); };
+  im.complete ? markWide() : im.addEventListener('load', markWide);
   f.onclick = onOpen;
   f.onkeydown = e => { if (e.key === 'Enter') onOpen(); };
   return f;
@@ -415,7 +437,8 @@ function renderGrid(type) {
     const f = document.createElement('figure');
     f.className = 'shot project';
     f.tabIndex = 0;
-    f.innerHTML = `<div class="stack"><img src="${p.images[0].src}" alt="${p.title}" loading="lazy"><span class="count">${p.images.length} pieces</span></div>
+    const coverImgs = p.images.slice(0, p.coverCount || 1).map(g => `<img src="${g.src}" alt="" loading="lazy">`).join('');
+    f.innerHTML = `<div class="stack"><div class="cover" aria-label="${p.title}">${coverImgs}</div><span class="count">${p.images.length} pieces</span></div>
       <figcaption><span><b>${p.title}</b><em>Open project →</em></span><small>${p.type || ''}</small></figcaption>`;
     f.onclick = () => openProject(p);
     f.onkeydown = e => { if (e.key === 'Enter') openProject(p); };

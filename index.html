@@ -135,6 +135,12 @@
   .roll dt{text-align:right;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:#8f8a80;padding-top:4px}
   .roll dd{text-align:left;font-weight:600;font-size:1.1rem}
   .roll dd small{display:block;font-weight:400;font-size:.85rem;color:#8f8a80}
+  .apps{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:26px 14px;margin:0 auto 56px}
+  .apps li{width:100px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:.82rem;line-height:1.25;color:#cfcac0}
+  .apps img{width:56px;height:56px;border-radius:13px;box-shadow:0 0 0 1px rgba(255,255,255,.08);transition:transform .2s}
+  .apps img.raw{border-radius:0;box-shadow:none;transform:scale(1.12)}
+  .apps li:hover img{transform:translateY(-3px)}
+  .apps li:hover img.raw{transform:translateY(-3px) scale(1.12)}
   .roll .head{font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;color:var(--tape);margin-bottom:20px}
 
   /* contact */
@@ -225,14 +231,25 @@
 <section class="credits" id="credits">
   <h2>Credits</h2>
   <div class="roll">
-    <p class="head">Tools</p>
-    <dl>
-      <dt>Edited in</dt><dd>CapCut</dd>
-      <dt>Also in</dt><dd>VN Video Editor</dd>
-      <dt>Thumbnails &amp; posts</dt><dd>Canva</dd>
-      <dt>Hooks &amp; captions</dt><dd>ChatGPT</dd>
-      <dt>Published on</dt><dd>Instagram Reels</dd>
-    </dl>
+    <p class="head">Video editing</p>
+    <ul class="apps">
+      <li><img src="icons/capcut.png" alt="" width="56" height="56">CapCut</li>
+      <li><img src="icons/premiere-pro.png" alt="" width="56" height="56">Premiere Pro</li>
+      <li><img src="icons/davinci-resolve.png" alt="" width="56" height="56" class="raw">DaVinci Resolve</li>
+      <li><img src="icons/filmora.png" alt="" width="56" height="56">Filmora</li>
+      <li><img src="icons/after-effects.svg" alt="" width="56" height="56">After Effects</li>
+      <li><img src="icons/vn.png" alt="" width="56" height="56">VN Video Editor</li>
+      <li><img src="icons/kinemaster.png" alt="" width="56" height="56">KineMaster</li>
+      <li><img src="icons/inshot.png" alt="" width="56" height="56">InShot</li>
+    </ul>
+    <p class="head">Photo &amp; design</p>
+    <ul class="apps">
+      <li><img src="icons/photoshop.png" alt="" width="56" height="56">Photoshop</li>
+      <li><img src="icons/lightroom.png" alt="" width="56" height="56">Lightroom</li>
+      <li><img src="icons/canva.png" alt="" width="56" height="56">Canva</li>
+      <li><img src="icons/snapseed.png" alt="" width="56" height="56">Snapseed</li>
+      <li><img src="icons/picsart.png" alt="" width="56" height="56">PicsArt</li>
+    </ul>
     <p class="head">What I do</p>
     <dl>
       <dt>Editing</dt><dd>Reels &amp; Shorts<small>cuts, transitions, speed ramps, beat sync</small></dd>

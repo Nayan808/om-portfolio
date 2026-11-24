@@ -2,3 +2,4 @@
 *.pdf
 .vercel
 .env*
+cv/
